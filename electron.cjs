@@ -194,7 +194,8 @@ function createWindow() {
     minWidth: 1100,
     minHeight: 720,
     backgroundColor: '#121214',
-    title: 'Frame - Carousel Studio',
+    title: 'FRAME Studio',
+    icon: path.join(__dirname, 'assets', 'frame.ico'),
     autoHideMenuBar: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
@@ -208,9 +209,9 @@ function createWindow() {
   // Web page title updates must not replace the actual Windows title bar name.
   mainWindow.webContents.on('page-title-updated', event => {
     event.preventDefault();
-    mainWindow.setTitle('Frame - Carousel Studio');
+    mainWindow.setTitle('FRAME Studio');
   });
-  mainWindow.setTitle('Frame - Carousel Studio');
+  mainWindow.setTitle('FRAME Studio');
 
   // Use Electron window zoom for keyboard shortcuts, not the canvas-only slider.
   // The main keyboard's + shares the = key; Ctrl+= needs no Shift.

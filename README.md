@@ -48,6 +48,8 @@ Third-party font license notices are stored in the `THIRD_PARTY_LICENSES` direct
 ```text
 FRAME-Studio/
 ├── src/
+├── assets/
+├── installer/
 ├── scripts/
 ├── THIRD_PARTY_LICENSES/
 ├── electron.cjs
@@ -63,9 +65,28 @@ FRAME-Studio/
 
 Generated files such as `node_modules`, `dist`, `release`, installers, and `.frameupdate` packages are excluded from version control.
 
+## Installation
+
+Windows users can download the latest installer from the repository's **Releases** page.
+
+Run:
+
+```text
+FRAME-Studio-v1.0.0-Setup.exe
+```
+
+The installer contains the packaged application. Node.js, npm, Electron, Vite, and Inno Setup are not required to use FRAME Studio.
+
+Because early public builds may not be code-signed, Windows SmartScreen may display an **Unknown publisher** warning.
+
 ## Development
 
-Install dependencies:
+### Requirements
+
+- Node.js
+- npm
+
+Install project dependencies:
 
 ```bash
 npm install --include=dev
@@ -83,21 +104,44 @@ Build the frontend:
 npm run build
 ```
 
-## Windows Packaging
+## Building the Windows Release
 
-Create the portable Windows build, installer files, and update package:
+FRAME Studio uses Inno Setup 6 to create the Windows installer.
+
+### Build requirements
+
+1. Install Node.js.
+2. Install [Inno Setup 6](https://jrsoftware.org/isinfo.php).
+3. Install project dependencies:
+
+```bash
+npm install --include=dev
+```
+
+### Build all Windows artifacts
 
 ```bash
 npm run package:win
 ```
 
-Generated files are placed in:
+This builds the frontend, portable Electron application, local `.frameupdate` package, and Windows installer when Inno Setup 6 is available.
+
+Generated release artifacts are placed in:
 
 ```text
 release/
+├── FRAME-Studio-portable/
+├── FRAME-Studio-v1.0.0.frameupdate
+└── FRAME-Studio-v1.0.0-Setup.exe
 ```
 
-The packaging process produces the Windows application and a `.frameupdate` package for updating an existing FRAME Studio installation.
+To build only the installer from an existing portable build:
+
+```bash
+npm run package:installer
+```
+
+Generated release artifacts are intentionally excluded from source control and should be distributed through GitHub Releases.
 
 ## Project Files
 
@@ -154,11 +198,11 @@ This allows normal users to update the application without reinstalling npm depe
 
 Standard text-editing shortcuts such as cut, copy, paste, and select all continue to work while editing text fields.
 
-## Production Repository
+## Repository
 
-This repository contains the production source for FRAME Studio.
+This repository contains the source code and build configuration for FRAME Studio.
 
-Development builds, test artifacts, local user projects, dependency folders, and generated installers should not be committed to this repository.
+Generated builds, local user projects, dependency folders, installers, and update packages are excluded from version control. Release binaries are published separately through GitHub Releases.
 
 ## Licensing
 
@@ -178,4 +222,4 @@ Current development priorities include:
 - reusable templates
 - improved export options
 - stronger project recovery
-- production-ready Windows update workflow
+- continued Windows packaging and update improvements

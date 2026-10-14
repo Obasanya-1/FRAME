@@ -18,8 +18,6 @@ const releaseRoot = path.join(root, 'release');
 const portable = path.join(releaseRoot, 'FRAME-Studio-portable');
 const resources = path.join(portable, 'resources');
 const appDir = path.join(resources, 'app');
-const setupDir = path.join(releaseRoot, 'FRAME-Studio-Setup');
-const setupPayload = path.join(setupDir, 'payload');
 
 if (!fs.existsSync(electronPkg)) {
   console.error('The Electron npm package is missing. Run: npm install --include=dev');
@@ -58,6 +56,9 @@ fs.copyFileSync(path.join(root, 'preload.cjs'), path.join(appDir, 'preload.cjs')
 if (fs.existsSync(path.join(root, 'THIRD_PARTY_LICENSES'))) {
   fs.cpSync(path.join(root, 'THIRD_PARTY_LICENSES'), path.join(appDir, 'THIRD_PARTY_LICENSES'), { recursive: true });
 }
+if (fs.existsSync(path.join(root, 'assets'))) {
+  fs.cpSync(path.join(root, 'assets'), path.join(appDir, 'assets'), { recursive: true });
+}
 fs.writeFileSync(path.join(appDir, 'package.json'), JSON.stringify({
   name: 'frame-studio',
   productName: 'FRAME Studio',
@@ -72,13 +73,7 @@ if (fs.existsSync(electronExe)) fs.renameSync(electronExe, frameExe);
 const manifest = { appId: 'frame-studio', productName: 'FRAME Studio', version, schema: 1 };
 fs.writeFileSync(path.join(portable, 'frame-update.json'), JSON.stringify(manifest, null, 2));
 
-// One-time installer folder. Users extract this once, run the CMD, and future
-// releases can be installed inside FRAME from a .frameupdate file.
-fs.mkdirSync(setupPayload, { recursive: true });
-fs.cpSync(portable, setupPayload, { recursive: true });
-const installPs1 = `\n$ErrorActionPreference = 'Stop'\n$Source = Join-Path $PSScriptRoot 'payload'\n$Target = Join-Path $env:LOCALAPPDATA 'Programs\\FRAME Studio'\nWrite-Host 'Installing FRAME Studio to:' $Target\nNew-Item -ItemType Directory -Force -Path $Target | Out-Null\nGet-ChildItem -LiteralPath $Target -Force -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue\nCopy-Item -Path (Join-Path $Source '*') -Destination $Target -Recurse -Force\n$Exe = Join-Path $Target 'FRAME Studio.exe'\n$Shell = New-Object -ComObject WScript.Shell\n$DesktopShortcut = $Shell.CreateShortcut((Join-Path ([Environment]::GetFolderPath('Desktop')) 'FRAME Studio.lnk'))\n$DesktopShortcut.TargetPath = $Exe\n$DesktopShortcut.WorkingDirectory = $Target\n$DesktopShortcut.Save()\n$StartDir = Join-Path $env:APPDATA 'Microsoft\\Windows\\Start Menu\\Programs'\n$StartShortcut = $Shell.CreateShortcut((Join-Path $StartDir 'FRAME Studio.lnk'))\n$StartShortcut.TargetPath = $Exe\n$StartShortcut.WorkingDirectory = $Target\n$StartShortcut.Save()\nStart-Process -FilePath $Exe\nWrite-Host 'FRAME Studio installed.'\n`;
-fs.writeFileSync(path.join(setupDir, 'install-frame-studio.ps1'), installPs1.trimStart(), 'utf8');
-fs.writeFileSync(path.join(setupDir, 'Install FRAME Studio.cmd'), '@echo off\r\npowershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0install-frame-studio.ps1"\r\nif errorlevel 1 pause\r\n', 'utf8');
+// Real Windows installer is built with Inno Setup after portable/update packaging.
 
 // Local update package: a zip renamed to .frameupdate. FRAME itself knows how
 // to unpack and apply it after the installed app exits.
@@ -115,6 +110,14 @@ fs.renameSync(tempZip, updateFile);
 
 console.log(`\nFRAME Studio ${version} packaging complete.`);
 console.log(`Portable app: ${portable}`);
-console.log(`One-time installer: ${setupDir}`);
 console.log(`Future update package: ${updateFile}`);
-console.log('\nFor normal use, run "Install FRAME Studio.cmd" once.');
+console.log('\nPortable/update packaging finished.');
+
+// Build the real Windows installer automatically when Inno Setup 6 is available.
+const installerBuilder = path.join(root, 'scripts', 'build-installer.cjs');
+try {
+  execFileSync(process.execPath, [installerBuilder], { cwd: root, stdio: 'inherit' });
+} catch (error) {
+  console.warn('\nInstaller was not built.');
+  console.warn('Install Inno Setup 6 once, then run: npm run package:installer');
+}
