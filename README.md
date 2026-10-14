@@ -134,12 +134,25 @@ This allows normal users to update the application without reinstalling npm depe
 
 | Shortcut | Action |
 | --- | --- |
+| `Ctrl + N` | New project |
+| `Ctrl + O` | Open project |
 | `Ctrl + S` | Save project |
 | `Ctrl + Shift + S` | Save project as |
-| `Ctrl + O` | Open project |
-| `Ctrl + N` | New project |
+| `Ctrl + Z` | Undo |
+| `Ctrl + Y` | Redo |
+| `Ctrl + Shift + Z` | Redo |
+| `Ctrl + C` | Copy selected layer |
+| `Ctrl + V` | Paste copied layer |
+| `Ctrl + A` | Select all layers |
+| `Delete` / `Backspace` | Delete selected layer(s) |
+| `Esc` | Clear the current layer selection |
+| `Arrow keys` | Move selected layer(s) by 10 px |
+| `Shift + Arrow keys` | Move selected layer(s) by 1 px |
+| `Ctrl + +` / `Ctrl + =` | Zoom window in |
+| `Ctrl + -` | Zoom window out |
+| `Ctrl + 0` | Reset window zoom |
 
-Additional editor shortcuts may be added as development continues.
+Standard text-editing shortcuts such as cut, copy, paste, and select all continue to work while editing text fields.
 
 ## Production Repository
 
