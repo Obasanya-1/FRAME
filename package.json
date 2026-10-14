@@ -1,0 +1,24 @@
+{
+  "name": "frame-studio",
+  "private": true,
+  "version": "0.4.1",
+  "description": "Desktop seamless carousel editor for Windows.",
+  "type": "module",
+  "main": "electron.cjs",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "desktop": "npm run build && electron .",
+    "package:win": "npm run build && node scripts/package-windows.cjs"
+  },
+  "dependencies": {
+    "lucide-react": "1.57.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "6.1.2",
+    "electron": "44.7.2",
+    "vite": "8.3.2"
+  }
+}
