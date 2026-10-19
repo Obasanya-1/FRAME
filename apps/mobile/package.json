@@ -5,9 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1 --strictPort",
-    "build": "vite build",
-    "cap:sync": "npm run build && cap sync android && node scripts/install-document-bridge.cjs",
-    "android": "npm run cap:sync && cap open android"
+    "build": "vite build && node ../../scripts/verify-mobile-bundle.mjs",
+    "cap:sync": "npm run build && cap sync android && node ../../scripts/verify-mobile-android-assets.mjs && node scripts/install-document-bridge.cjs",
+    "android": "npm run cap:sync && cap open android",
+    "android:reinstall": "npm run cap:sync && node ../../scripts/install-verified-mobile.mjs",
+    "verify:apk": "node ../../scripts/verify-mobile-apk.mjs"
   },
   "devDependencies": {
     "typescript": "^7.0.2"
