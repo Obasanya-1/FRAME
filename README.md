@@ -1,47 +1,79 @@
-# FRAME unified repository
+# FRAME
 
-FRAME Studio (Windows/Electron) and FRAME Mobile (Android/Capacitor) now import **the same React editor entry** from `packages/editor/src/main.jsx`, including the rendering logic, project normalization, presets, layers, and export code. This is the first shared-code migration, not yet a fully modular editor core. Desktop's Electron entry is preserved.
+**Design seamless carousels, your way.**
 
-## Requirements
-- Node.js 22+ and npm
-- Android Studio/JDK/Android SDK for native Android builds
-- Windows for the desktop Windows release packaging
+FRAME is a carousel design application for Windows and Android. Create multi-slide designs with images, text, shapes, and customizable styles, then export them for sharing.
 
-## Setup
+FRAME Studio and FRAME Mobile are built on the same editing engine, with interfaces tailored to desktop and touchscreens.
+
+## Apps
+
+| | FRAME Studio | FRAME Mobile |
+| --- | --- | --- |
+| **Platform** | Windows | Android |
+| **Experience** | Desktop editing with keyboard and mouse controls | Touch-friendly editing on the go |
+| **Download** | [GitHub Releases](https://github.com/Obasanya-1/FRAME-Studio/releases) | [GitHub Releases](https://github.com/Obasanya-1/FRAME-Studio/releases) (when available) |
+
+The [Releases page](https://github.com/Obasanya-1/FRAME-Studio/releases) lists available versions and downloads for each platform.
+
+## Features
+
+- **Carousel editor:** Create and arrange multiple slides in a single project.
+- **Flexible layouts:** Combine photos, text, shapes, and preset designs.
+- **Image editing:** Crop, position, and fit images within slides or shapes.
+- **Layers and groups:** Organize objects, adjust stacking order, and edit grouped elements.
+- **Personalization:** Customize colors, typography, themes, and backgrounds.
+- **Project files:** Save editable designs in FRAME's `.frame` format.
+- **Exports:** Export completed slides for sharing, with platform-specific export options.
+
+### FRAME Studio
+
+The Windows desktop app includes keyboard and mouse editing, project management, native file dialogs, carousel preview, and multi-slide export.
+
+### FRAME Mobile
+
+The Android app brings the editor to a touch interface, with local projects, gesture-based editing, and device export and sharing.
+
+## Get FRAME
+
+Download the latest available builds from **[GitHub Releases](https://github.com/Obasanya-1/FRAME-Studio/releases)**.
+
+- **Windows:** Download and run the FRAME Studio setup installer.
+- **Android:** Download the FRAME Mobile APK if one has been published.
+
+## Build from source
+
+FRAME uses a shared React editor, Electron for Windows, and Capacitor for Android. Building from source requires Node.js 22+ and npm. Native Android builds also require Android Studio and the Android SDK.
+
 ```bash
 npm install
-npm run dev:studio
-npm run dev:mobile
-npm run build:studio
-npm run build:mobile
 ```
 
-For Android native scaffolding (run after `npm install`):
-```bash
-cd apps/mobile
-npx cap add android
-cd ../..
-npm run android
+| Command | Purpose |
+| --- | --- |
+| `npm run dev:studio` | Run the Studio development server |
+| `npm run desktop` | Launch the Electron desktop app |
+| `npm run build:studio` | Build Studio's web assets |
+| `npm run dev:mobile` | Run the Mobile development server |
+| `npm run build:mobile` | Build Mobile's web assets |
+| `npm run android` | Build, sync, and open the Android project |
+
+### Repository structure
+
+```text
+apps/
+  studio/        Windows desktop application
+  mobile/        Android application
+packages/
+  editor/        Shared carousel editor
+scripts/         Build and test utilities
+docs/            Project documentation
 ```
 
-`android/` is generated locally and ignored; keep it in Git once native configuration/customization begins by removing its ignore rule.
+## Feedback
 
-## Key notes
-- Desktop code was imported unchanged except for a shared browser project picker fallback, consistent JSON project format version, and a mobile-specific label controlled through Vite mode.
-- This first milestone shares an actual editor file instead of duplicating source. Future refactors should extract project, canvas, history, preset, and export modules from the editor component.
-- FRAME Mobile currently uses the existing UI with responsive styling. Touch ergonomics, native storage/gallery and export need additional implementation.
-- If the desktop project requires files from `assets`, they remain in `apps/studio/assets`.
-- To connect to GitHub, create one new repository and push this directory. This ZIP does **not** move or modify remote Git repositories or preserve past commit history.
+Report bugs or suggest improvements through [GitHub Issues](https://github.com/Obasanya-1/FRAME-Studio/issues).
 
-## Windows Installer (FRAME Studio)
+## License
 
-From the unified repository root on Windows, install Inno Setup 6 and run:
-
-```cmd
-npm install --include=dev
-npm run package:installer
-```
-
-The setup EXE is written to `apps\studio\release\`. For a portable app
-and `.frameupdate` file without requiring Inno Setup, run `npm run package:win`.
-See `apps/studio/README.md` for details.
+FRAME is open source under the [MIT License](LICENSE).
