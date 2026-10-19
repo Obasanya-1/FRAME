@@ -1,225 +1,79 @@
-# FRAME Studio
+# FRAME
 
-FRAME Studio is a desktop visual editor for creating seamless multi-slide social media carousels, image layouts, and text-based designs.
+**Design seamless carousels, your way.**
 
-It is built as a Windows desktop application using Electron, React, and Vite.
+FRAME is a carousel design application for Windows and Android. Create multi-slide designs with images, text, shapes, and customizable styles, then export them for sharing.
+
+FRAME Studio and FRAME Mobile are built on the same editing engine, with interfaces tailored to desktop and touchscreens.
+
+## Apps
+
+| | FRAME Studio | FRAME Mobile |
+| --- | --- | --- |
+| **Platform** | Windows | Android |
+| **Experience** | Desktop editing with keyboard and mouse controls | Touch-friendly editing on the go |
+| **Download** | [GitHub Releases](https://github.com/Obasanya-1/FRAME-Studio/releases) | [GitHub Releases](https://github.com/Obasanya-1/FRAME-Studio/releases) (when available) |
+
+The [Releases page](https://github.com/Obasanya-1/FRAME-Studio/releases) lists available versions and downloads for each platform.
 
 ## Features
 
-- Seamless multi-slide carousel editing
-- Portrait and landscape project orientations
-- Drag-and-drop image placement
-- Text layers
-- Shape layers
-- Custom background colors
-- Bundled offline fonts
-- Project save/open support with `.frame` files
-- Autosave and session recovery
-- PNG export for individual slides
-- Keyboard shortcuts
-- Desktop-native menus
-- Local update package support with `.frameupdate` files
+- **Carousel editor:** Create and arrange multiple slides in a single project.
+- **Flexible layouts:** Combine photos, text, shapes, and preset designs.
+- **Image editing:** Crop, position, and fit images within slides or shapes.
+- **Layers and groups:** Organize objects, adjust stacking order, and edit grouped elements.
+- **Personalization:** Customize colors, typography, themes, and backgrounds.
+- **Project files:** Save editable designs in FRAME's `.frame` format.
+- **Exports:** Export completed slides for sharing, with platform-specific export options.
 
-## Current Fonts
+### FRAME Studio
 
-FRAME Studio currently includes:
+The Windows desktop app includes keyboard and mouse editing, project management, native file dialogs, carousel preview, and multi-slide export.
 
-- Inter
-- Lato
-- Noto Serif
-- Comfortaa
-- Caveat
-- Pacifico
+### FRAME Mobile
 
-Inter, Lato, Noto Serif, and Comfortaa are bundled locally for offline use. Caveat and Pacifico are currently loaded from Google Fonts when an internet connection is available.
+The Android app brings the editor to a touch interface, with local projects, gesture-based editing, and device export and sharing.
 
-Third-party font license notices are stored in the `THIRD_PARTY_LICENSES` directory.
+## Get FRAME
 
-## Tech Stack
+Download the latest available builds from **[GitHub Releases](https://github.com/Obasanya-1/FRAME-Studio/releases)**.
 
-- React
-- Vite
-- Electron
-- JavaScript
-- CSS
+- **Windows:** Download and run the FRAME Studio setup installer.
+- **Android:** Download the FRAME Mobile APK if one has been published.
 
-## Project Structure
+## Build from source
 
-```text
-FRAME-Studio/
-├── src/
-├── assets/
-├── installer/
-├── scripts/
-├── THIRD_PARTY_LICENSES/
-├── electron.cjs
-├── preload.cjs
-├── index.html
-├── package.json
-├── package-lock.json
-├── vite.config.js
-├── CHANGELOG.md
-├── LICENSE
-└── README.md
-```
-
-Generated files such as `node_modules`, `dist`, `release`, installers, and `.frameupdate` packages are excluded from version control.
-
-## Installation
-
-Windows users can download the latest installer from the repository's **Releases** page.
-
-Run:
-
-```text
-FRAME-Studio-v1.0.0-Setup.exe
-```
-
-The installer contains the packaged application. Node.js, npm, Electron, Vite, and Inno Setup are not required to use FRAME Studio.
-
-Because early public builds may not be code-signed, Windows SmartScreen may display an **Unknown publisher** warning.
-
-## Development
-
-### Requirements
-
-- Node.js
-- npm
-
-Install project dependencies:
+FRAME uses a shared React editor, Electron for Windows, and Capacitor for Android. Building from source requires Node.js 22+ and npm. Native Android builds also require Android Studio and the Android SDK.
 
 ```bash
-npm install --include=dev
+npm install
 ```
 
-Run FRAME Studio in development mode:
-
-```bash
-npm run desktop
-```
-
-Build the frontend:
-
-```bash
-npm run build
-```
-
-## Building the Windows Release
-
-FRAME Studio uses Inno Setup 6 to create the Windows installer.
-
-### Build requirements
-
-1. Install Node.js.
-2. Install [Inno Setup 6](https://jrsoftware.org/isinfo.php).
-3. Install project dependencies:
-
-```bash
-npm install --include=dev
-```
-
-### Build all Windows artifacts
-
-```bash
-npm run package:win
-```
-
-This builds the frontend, portable Electron application, local `.frameupdate` package, and Windows installer when Inno Setup 6 is available.
-
-Generated release artifacts are placed in:
-
-```text
-release/
-├── FRAME-Studio-portable/
-├── FRAME-Studio-v1.0.0.frameupdate
-└── FRAME-Studio-v1.0.0-Setup.exe
-```
-
-To build only the installer from an existing portable build:
-
-```bash
-npm run package:installer
-```
-
-Generated release artifacts are intentionally excluded from source control and should be distributed through GitHub Releases.
-
-## Project Files
-
-FRAME Studio projects use the `.frame` file extension.
-
-Saved projects include project settings such as:
-
-- orientation
-- slide count
-- canvas background
-- image layers
-- text layers
-- shapes
-- typography
-- layer positions and dimensions
-
-FRAME Studio also maintains local autosave data separately from application files so application updates do not overwrite user projects.
-
-## Updating FRAME Studio
-
-Installed versions of FRAME Studio support local update packages.
-
-To update:
-
-1. Open FRAME Studio.
-2. Go to `Help`.
-3. Select `Install Update Package...`.
-4. Choose the new `.frameupdate` file.
-5. FRAME Studio will apply the update and restart.
-
-This allows normal users to update the application without reinstalling npm dependencies or rebuilding the project.
-
-## Keyboard Shortcuts
-
-| Shortcut | Action |
+| Command | Purpose |
 | --- | --- |
-| `Ctrl + N` | New project |
-| `Ctrl + O` | Open project |
-| `Ctrl + S` | Save project |
-| `Ctrl + Shift + S` | Save project as |
-| `Ctrl + Z` | Undo |
-| `Ctrl + Y` | Redo |
-| `Ctrl + Shift + Z` | Redo |
-| `Ctrl + C` | Copy selected layer |
-| `Ctrl + V` | Paste copied layer |
-| `Ctrl + A` | Select all layers |
-| `Delete` / `Backspace` | Delete selected layer(s) |
-| `Esc` | Clear the current layer selection |
-| `Arrow keys` | Move selected layer(s) by 10 px |
-| `Shift + Arrow keys` | Move selected layer(s) by 1 px |
-| `Ctrl + +` / `Ctrl + =` | Zoom window in |
-| `Ctrl + -` | Zoom window out |
-| `Ctrl + 0` | Reset window zoom |
+| `npm run dev:studio` | Run the Studio development server |
+| `npm run desktop` | Launch the Electron desktop app |
+| `npm run build:studio` | Build Studio's web assets |
+| `npm run dev:mobile` | Run the Mobile development server |
+| `npm run build:mobile` | Build Mobile's web assets |
+| `npm run android` | Build, sync, and open the Android project |
 
-Standard text-editing shortcuts such as cut, copy, paste, and select all continue to work while editing text fields.
+### Repository structure
 
-## Repository
+```text
+apps/
+  studio/        Windows desktop application
+  mobile/        Android application
+packages/
+  editor/        Shared carousel editor
+scripts/         Build and test utilities
+docs/            Project documentation
+```
 
-This repository contains the source code and build configuration for FRAME Studio.
+## Feedback
 
-Generated builds, local user projects, dependency folders, installers, and update packages are excluded from version control. Release binaries are published separately through GitHub Releases.
+Report bugs or suggest improvements through [GitHub Issues](https://github.com/Obasanya-1/FRAME-Studio/issues).
 
-## Licensing
+## License
 
-FRAME Studio source code is licensed under the MIT License. See the root `LICENSE` file for the full terms.
-
-Third-party assets and fonts remain subject to their respective licenses. See the `THIRD_PARTY_LICENSES` directory for bundled font license notices.
-
-## Status
-
-FRAME Studio is under active development.
-
-Current development priorities include:
-
-- improved text controls
-- additional bundled fonts
-- more canvas and image controls
-- reusable templates
-- improved export options
-- stronger project recovery
-- continued Windows packaging and update improvements
+FRAME is open source under the [MIT License](LICENSE).

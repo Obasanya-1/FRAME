@@ -1,0 +1,20 @@
+{
+  "name": "@frame/mobile",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --strictPort",
+    "build": "vite build",
+    "cap:sync": "npm run build && cap sync android && node scripts/install-document-bridge.cjs",
+    "android": "npm run cap:sync && cap open android"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "@capacitor/app": "^8.1.2",
+    "@capacitor/filesystem": "^8.1.4",
+    "@capacitor/share": "^8.0.3"
+  }
+}

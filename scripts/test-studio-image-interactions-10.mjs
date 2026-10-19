@@ -1,0 +1,30 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {fileURLToPath} from 'node:url';
+import {dirname,resolve} from 'node:path';
+import {studioFillVisibleBounds} from '../packages/editor/src/studioImageHitbox.mjs';
+import {findImageShapeDropTarget} from '../packages/editor/src/shapeDropTarget.js';
+
+const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
+const frame={x:321,y:0,w:321,h:400};
+assert.deepEqual(studioFillVisibleBounds({x:430,y:70,w:90,h:150},frame),{x:430,y:70,w:90,h:150},'image hitbox stays at visible image');
+assert.deepEqual(studioFillVisibleBounds({x:270,y:-20,w:110,h:120},frame),{x:321,y:0,w:59,h:100},'only intersection of image and page may intercept clicks');
+assert.equal(studioFillVisibleBounds({x:0,y:0,w:300,h:300},frame),null,'unpainted page must have no hitbox');
+assert.equal(studioFillVisibleBounds({x:400,y:100,w:0,h:100},frame),null,'empty images do not catch pointer events');
+const shapes=[{id:'star',type:'shape',shape:'star',x:100,y:100,w:120,h:120,z:4},
+              {id:'rounded',type:'shape',shape:'rounded',x:300,y:200,w:100,h:100,radius:10,z:3}];
+const largePhoto={id:'image',type:'image',x:0,y:0,w:700,h:450};
+assert.equal(findImageShapeDropTarget(shapes,largePhoto,{x:160,y:125},new Set(['image']))?.id,'star','cursor inside star attaches even when photo center is outside');
+assert.equal(findImageShapeDropTarget(shapes,largePhoto,{x:350,y:240},new Set(['image']))?.id,'rounded','cursor selects rounded target');
+assert.equal(findImageShapeDropTarget(shapes,largePhoto,{x:210,y:100},new Set(['image'])),null,'mere image overlap without cursor inside a shape must not attach');
+const jsx=readFileSync(resolve(root,'packages/editor/src/main.jsx'),'utf8');
+const css=readFileSync(resolve(root,'packages/editor/src/styles.css'),'utf8');
+assert.match(jsx,/onPointerDown=\{fillFrame\?undefined:onPointerDown\}/,'page crop container does not capture pointer');
+assert.match(jsx,/className="studio-fill-image-hitbox"/,'visible image owns the pointer');
+assert.match(jsx,/className="studio-resize-overlay"/,'desktop grips are outside clipped layers');
+assert.match(jsx,/selected && IS_MOBILE &&/, 'mobile keeps existing handle behavior');
+assert.match(jsx,/const droppedId=IS_MOBILE \? \(target\?\.id===armedShapeId/,'mobile dwell-to-fill preserved');
+assert.match(jsx,/className="studio-shape-drop-overlay"/,'desktop drop outline drawn above photo');
+assert.match(css,/\.studio-resize-grip\s*\{[^}]*32px/s,'mouse resize targets are 32px');
+assert.match(jsx,/previewOpen &&/,'Studio Preview remains available');
+console.log('Studio Parity 10: visible fill hitboxes, cross-slide clipping, cursor-based shape drops, raised resize grips, Mobile gesture isolation, Preview preservation passed.');
