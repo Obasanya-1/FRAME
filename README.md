@@ -12,7 +12,7 @@ FRAME Studio and FRAME Mobile are built on the same editing engine, with interfa
 | --- | --- | --- |
 | **Platform** | Windows | Android |
 | **Experience** | Desktop editing with keyboard and mouse controls | Touch-friendly editing on the go |
-| **Download** | [GitHub Releases](https://github.com/Obasanya-1/FRAME-Studio/releases) | [GitHub Releases](https://github.com/Obasanya-1/FRAME-Studio/releases) (when available) |
+| **Download** | [GitHub Releases](https://github.com/Obasanya-1/FRAME-Studio/releases) | [GitHub Releases](https://github.com/Obasanya-1/FRAME-Studio/releases) |
 
 The [Releases page](https://github.com/Obasanya-1/FRAME-Studio/releases) lists available versions and downloads for each platform.
 
