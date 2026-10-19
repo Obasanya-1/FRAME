@@ -1,0 +1,36 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {getMaskCropGeometry} from '../packages/editor/src/maskCrop.mjs';
+
+const main=readFileSync(new URL('../packages/editor/src/main.jsx',import.meta.url),'utf8');
+const css=readFileSync(new URL('../apps/mobile/src/mobile.css',import.meta.url),'utf8');
+const thumb=readFileSync(new URL('../apps/mobile/src/MobileMaskedThumbnail.jsx',import.meta.url),'utf8');
+const original=readFileSync(new URL('../apps/mobile/src/ProjectThumbnail.jsx',import.meta.url),'utf8');
+const has=(src,text,msg)=>assert.ok(src.includes(text),msg);
+has(main,'const finishMaskCrop = () => {','crop finishing must use explicit cleanup');
+const doneBlock=main.split('const finishMaskCrop = () => {')[1]?.split('const changeMaskCropZoom =')[0]||'';
+has(doneBlock,'setMobileEditOpen(false)','Done must close Edit sheet');
+assert.doesNotMatch(doneBlock,/setMobileEditOpen\(true\)/,'Done must not open Edit sheet');
+has(main,'mobile-mask-selection-outline','masked pair must have a visible outline');
+has(main,'!maskCropImageId && selectedIds.length===1','outline must not block dedicated crop UI');
+has(main,"!layers.some(item=>item.type==='image' && item.maskShapeId===mask.id)",'only filled shapes should have mask-pair feedback');
+has(css,'.stage .mobile-mask-selection-outline','outline must be styled on mobile stage');
+has(css,'pointer-events:auto;touch-action:none;overflow:visible','selection frame must receive taps without canvas panning');
+has(main,"import {MobileMaskedThumbnail}",'shared editor must import mobile-specific mask previews');
+assert.equal((main.match(/<MobileMaskedThumbnail project=/g)||[]).length,3,'all three Mobile Home thumbnails use mask-aware component');
+has(thumb,"import {ProjectThumbnail} from './ProjectThumbnail.jsx'",'keep existing thumbnail for nonmasked projects');
+has(thumb,'if(!needsShapeAwareHomeThumbnail(project))return <ProjectThumbnail project={project}/>','only projects without nonrectangular shapes or masks use the legacy renderer');
+has(thumb,"import {getMaskCropGeometry}",'masked Home must reuse shared mask crop calculation');
+has(thumb,'shapesById.get(layer.maskShapeId)||layer','thumbnail visibility must use the mask position');
+has(thumb,'const crop=getMaskCropGeometry(image,mask)','thumbnail image must use saved crop coordinates');
+has(thumb,'<clipPath id={clipId}','masked photos must use SVG clipping instead of rectangular fallback');
+has(thumb,'x={crop.x-(Number(mask.x)||0)}','thumbnail photo position must be relative to its mask');
+assert.ok(original.length>0,'original Studio-shared thumbnail must be retained');
+
+const mask={id:'mask',x:45,y:70,w:210,h:190,shape:'triangle'};
+const image={id:'photo',maskShapeId:'mask',x:900,y:900,w:80,h:40,naturalWidth:800,naturalHeight:400,maskZoom:2,maskPanX:.65,maskPanY:-.4};
+assert.equal(image.x<320 && image.x+image.w>0,false);
+assert.equal(mask.x<320 && mask.x+mask.w>0,true);
+const crop=getMaskCropGeometry(image,mask);
+assert.ok(crop.w>mask.w && crop.h>=mask.h,'zoom must enlarge within shape');
+console.log('08M/08P/08R: shape-aware thumbnail, touch-safe selection, crop Done and legacy fallback checks passed');

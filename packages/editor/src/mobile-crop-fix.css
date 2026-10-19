@@ -1,0 +1,18 @@
+/* Mobile fill-to-page images: select image bounds, not the slide crop. */
+@media(max-width:850px){
+  .layer.layer-image-fill.selected{outline:none!important;box-shadow:none!important}
+  .fill-image-selection{position:absolute;box-sizing:border-box;border:2px dashed #6c9fff;pointer-events:none;z-index:9}
+}
+
+/* Fill-page image: clip only the pixels, not the touch targets and crop outline. */
+@media(max-width:850px){
+  .frame-mobile .layer.layer-image-fill{overflow:visible!important;}
+  .frame-mobile .layer.layer-image-fill>.fill-image-clip{position:absolute;inset:0;overflow:hidden;pointer-events:none;}
+  .frame-mobile .layer.selected>.resize-handle{
+    width:28px;height:28px;border:2px solid #5aa9ff;border-radius:9px;
+    background:radial-gradient(circle,#fff 0 4px,#5aa9ff 4px 6px,transparent 7px);
+    box-shadow:0 0 0 2px #1a1a2080;
+    z-index:30;touch-action:none;
+  }
+  .frame-mobile .fill-image-selection{border-width:2px;}
+}

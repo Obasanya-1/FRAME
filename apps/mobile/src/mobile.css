@@ -1,0 +1,669 @@
+/* FRAME Mobile shell: touch-safe, small-screen first. The inherited editor
+   is intentionally retained until its tools are extracted into FRAME Core. */
+html { overscroll-behavior: none; }
+body { margin: 0; -webkit-tap-highlight-color: transparent; }
+button, input, select, textarea { font: inherit; }
+button, label { touch-action: manipulation; }
+@media (max-width: 850px) {
+  .app { min-height: 100dvh; }
+  header { padding-top: env(safe-area-inset-top); }
+  .rail { padding-bottom: max(6px, env(safe-area-inset-bottom)); height: calc(70px + env(safe-area-inset-bottom)); }
+  .workspace { padding-bottom: calc(100px + env(safe-area-inset-bottom)); }
+  .stage-scroller { max-height: calc(100dvh - 205px - env(safe-area-inset-top)); min-height: 340px; }
+  .top-actions { overflow-x: auto; scrollbar-width: none; }
+  .top-actions::-webkit-scrollbar { display: none; }
+  .top-actions > button { flex-shrink: 0; }
+  .inspector { display: none; } /* Closed by default; mobile drawer rules below reveal it. */
+}
+
+/* Mobile header: keep every existing editor action visible without horizontal clipping.
+   Override the desktop single-row toolbar without touching shared Studio styling. */
+@media (max-width: 850px) {
+  .app > header {
+    height: auto;
+    min-width: 0;
+    padding: calc(9px + env(safe-area-inset-top)) 10px 9px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 9px;
+  }
+  .app > header .brand {
+    min-width: 0;
+    width: 100%;
+  }
+  .app > header .brand > div:last-child { min-width: 0; flex: 1; }
+  .app > header .project-title-row { min-width: 0; }
+  .app > header .project-title-button {
+    max-width: 115px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .app > header .top-actions {
+    display: grid;
+    width: 100%;
+    min-width: 0;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-auto-rows: 35px;
+    gap: 5px;
+    overflow: visible;
+  }
+  .app > header .top-actions > button {
+    width: 100%;
+    min-width: 0;
+    height: 35px;
+    padding: 0 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    white-space: nowrap;
+  }
+  .app > header .top-actions > .autosave-toggle,
+  .app > header .top-actions > .export { grid-column: span 2; }
+  .app > header .top-actions > .autosave-toggle { gap: 4px; font-size: 10px; }
+  .app > header .top-actions > .export { gap: 4px; }
+  .app > header .top-actions > .export svg { width: 14px; height: 14px; flex: none; }
+  .app > header .top-actions > .icon svg { width: 17px; height: 17px; }
+  .app > header .top-actions > .carousel-presets-trigger,
+  .app > header .top-actions > .preview-action { padding: 0 2px; font-size: 10px; }
+  .app .instagram-preview-overlay,
+  .app .carousel-presets-overlay,
+  .app .projects-overlay { z-index: 3500; }
+}
+
+/* Mobile inspector: one shared editor, touch-friendly overlay for Layers and Style. */
+@media (max-width: 850px) {
+  .frame-mobile .mobile-inspector-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    border: 0;
+    padding: 0;
+    background: rgba(0,0,0,.48);
+    cursor: pointer;
+  }
+  .frame-mobile.mobile-inspector-open .inspector {
+    display: block;
+    position: fixed;
+    z-index: 61;
+    left: 0;
+    right: 0;
+    top: auto;
+    bottom: calc(70px + env(safe-area-inset-bottom));
+    width: 100%;
+    height: min(66dvh, 600px);
+    max-height: calc(100dvh - 150px - env(safe-area-inset-top));
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background: var(--panel);
+    border: 1px solid var(--stroke);
+    border-radius: 18px 18px 0 0;
+    box-shadow: 0 -12px 45px #0008;
+  }
+  .frame-mobile .mobile-inspector-header {
+    display: flex;
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 18px;
+    background: var(--panel);
+    color: var(--ink);
+    border-bottom: 1px solid var(--stroke);
+  }
+  .frame-mobile .mobile-inspector-header button {
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--stroke);
+    border-radius: 10px;
+    background: var(--field);
+    color: var(--ink);
+    font-size: 24px;
+    cursor: pointer;
+  }
+  .frame-mobile .inspector .panel { padding: 14px 18px 30px; }
+  .frame-mobile .inspector input,
+  .frame-mobile .inspector select,
+  .frame-mobile .inspector textarea { max-width: 100%; }
+  .frame-mobile.mobile-inspector-open .rail { z-index: 62; }
+}
+
+/* 04: edit inspector is part of the mobile sheet, not an invisible sidebar. */
+@media (max-width:850px){
+ .frame-mobile .inspector .panel textarea {min-height:95px;font-size:16px;}
+ .frame-mobile .inspector .panel input,.frame-mobile .inspector .panel select {font-size:16px;}
+ .frame-mobile .mobile-inspector-header {touch-action:manipulation;}
+}
+
+/* 04B: context-sensitive editor access without blocking canvas dragging. */
+@media (max-width: 850px) {
+  .frame-mobile .mobile-context-edit {
+    position: fixed;
+    z-index: 35;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    width: 76px;
+    height: 36px;
+    padding: 0 9px;
+    border: 1px solid var(--accent);
+    border-radius: 18px;
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 4px 15px #0008;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    touch-action: manipulation;
+    animation: frame-context-edit-in .16s ease-out both;
+  }
+  @keyframes frame-context-edit-in {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .frame-mobile .mobile-context-edit { animation: none; }
+  }
+}
+
+/* 04D: visible, non-blocking feedback for explicit mobile saves. */
+@media (max-width: 850px) {
+  .frame-mobile .top-actions .mobile-save-confirmed {
+    color: #54d69b !important;
+    border-color: #54d69b !important;
+  }
+  .frame-mobile .mobile-save-feedback {
+    position: fixed;
+    z-index: 100;
+    top: calc(env(safe-area-inset-top) + 112px);
+    left: 50%;
+    transform: translateX(-50%);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    max-width: calc(100vw - 28px);
+    padding: 10px 14px;
+    border: 1px solid var(--stroke);
+    border-radius: 99px;
+    background: var(--panel);
+    color: var(--ink);
+    box-shadow: 0 5px 24px #0006;
+    font-size: 12px;
+    font-weight: 700;
+    pointer-events: none;
+    text-align: center;
+  }
+  .frame-mobile .mobile-save-success { border-color: #54d69b; }
+  .frame-mobile .mobile-save-success svg { color: #54d69b; }
+  .frame-mobile .mobile-save-error { border-color: #ec8080; }
+  .frame-mobile .mobile-save-error svg { color: #ec8080; }
+}
+
+/* Patch 05: home is Mobile-only and does not alter Studio. */
+.frame-mobile .frame-home{min-height:100dvh;min-height:100svh;padding:calc(24px + env(safe-area-inset-top)) 18px calc(30px + env(safe-area-inset-bottom));overflow-y:auto;color:var(--ink);background:var(--surface)}
+.frame-home-brand{display:flex;align-items:center;gap:14px;margin-bottom:24px}.frame-home-brand h1{font-size:22px;margin:0}.frame-home-brand p{font-size:12px;color:var(--muted);margin:5px 0 0}
+.frame-home-tabs{display:flex;gap:8px;margin-bottom:18px}.frame-home-tabs button{flex:1;padding:12px;border-radius:11px;border:1px solid var(--stroke);background:var(--field);color:var(--muted);font-weight:700}.frame-home-tabs button.active{background:var(--accent-soft);color:var(--accent);border-color:var(--accent)}
+.frame-home-create,.frame-home-import{width:100%;display:flex;justify-content:center;align-items:center;gap:9px;padding:15px;border-radius:12px;border:1px solid var(--stroke);margin:9px 0;background:var(--accent);color:white;font-weight:700}.frame-home-import{background:var(--field);color:var(--ink)}
+.frame-home-grid{display:grid;gap:10px;margin-top:20px}.frame-home-grid>p{color:var(--muted);font-size:13px;text-align:center}
+.frame-home-tile{display:flex;align-items:center;border:1px solid var(--stroke);border-radius:12px;background:var(--field);overflow:hidden}.frame-home-tile button:first-child{flex:1;min-width:0;padding:17px 14px;text-align:left;background:transparent;border:0;color:var(--ink)}.frame-home-tile button:last-child{padding:15px;background:transparent;color:var(--muted);border:0}.frame-home-tile strong,.frame-home-preset strong{display:block;overflow:hidden;text-overflow:ellipsis}.frame-home-tile span,.frame-home-preset span{display:block;font-size:11px;color:var(--muted);margin-top:6px}
+.frame-home-preset{padding:19px;text-align:left;background:var(--field);border:1px solid var(--stroke);border-radius:12px;color:var(--ink)}.frame-home-error{color:#ff9292;font-size:12px}
+
+/* Patch 05B: lightweight miniature project previews on the mobile home screen. */
+.frame-home-thumbnail{display:block;flex:none;position:relative;overflow:hidden;border-radius:7px;background:#ddd;box-shadow:0 1px 5px #0003}
+.frame-home-thumbnail-canvas{position:absolute;left:0;top:0;display:block;overflow:hidden;transform-origin:top left;pointer-events:none}
+.frame-home-tile>button:first-child,.frame-home-preset{display:flex;align-items:center;gap:14px}
+.frame-home-tile-details{flex:1;min-width:0;display:block;text-align:left}
+.frame-home-tile-details strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.frame-home-tile-details>span{display:block;white-space:normal}
+
+/* Patch 05C: Hybrid home treatment. Static CSS only, no new preview rendering. */
+.frame-mobile .frame-home{background:var(--surface);padding:0 16px max(36px,env(safe-area-inset-bottom));overflow-x:hidden}
+.frame-home-hero{position:relative;isolation:isolate;overflow:hidden;margin:0 -16px 22px;padding:calc(30px + env(safe-area-inset-top)) 22px 26px;background:linear-gradient(140deg,#26223e 0%,#171922 58%,#151519 100%);color:#f6f6fa;border-bottom:1px solid #ffffff12}
+.frame-home-hero::after{content:"";position:absolute;z-index:-1;right:-85px;top:-125px;width:285px;height:285px;pointer-events:none;border-radius:50%;background:radial-gradient(circle,#9583f34d 0%,#9583f30a 55%,transparent 72%)}
+.frame-home-hero .frame-home-brand{margin:0 0 15px}.frame-home-hero .frame-home-brand .mark{width:42px;height:42px;flex:none;border-radius:13px;font-size:25px;display:grid;place-items:center}
+.frame-home-eyebrow,.frame-home-section-kicker{display:block;font-size:9px;font-weight:800;letter-spacing:1.6px;color:#b6a7fd}
+.frame-home-hero .frame-home-brand h1{font-size:25px;letter-spacing:-.8px;margin:3px 0 0;color:#fff}.frame-home-hero .frame-home-brand h1 span{font-weight:400;color:#d4d0e7}
+.frame-home-hero>p{font-size:13px;margin:0 0 19px;color:#c4c3d3}
+.frame-home-quick-actions{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px}
+.frame-home-quick-actions .frame-home-create,.frame-home-quick-actions .frame-home-import{width:auto;margin:0;min-height:44px;padding:10px 16px;border-radius:12px;font-size:12px;white-space:nowrap}
+.frame-home-quick-actions .frame-home-import{background:#ffffff12;border-color:#ffffff29;color:#fff}
+.frame-home-section-heading{display:flex;justify-content:space-between;align-items:end;gap:8px;margin-bottom:12px}
+.frame-home-section-heading h2{font-size:17px;letter-spacing:-.3px;margin:3px 0 0;color:var(--ink)}
+.frame-home-section-heading p{margin:5px 0 0;font-size:11px;color:var(--muted)}
+.frame-home-section-heading>button{border:0;background:transparent;color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;padding:6px 0}
+.frame-home-featured{margin-bottom:24px}.frame-home-featured-strip{display:flex;gap:12px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;padding:1px 1px 9px;scrollbar-width:thin}
+.frame-home-featured-card{flex:0 0 124px;scroll-snap-align:start;min-width:0;border:1px solid var(--stroke);border-radius:14px;background:var(--field);color:var(--ink);padding:9px 8px;cursor:pointer;text-align:left}
+.frame-home-featured-art{display:flex;align-items:center;justify-content:center;height:132px;border-radius:9px;background:var(--surface);overflow:hidden}
+.frame-home-featured-name{display:block;margin:9px 2px 1px;font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.frame-home-tabs{gap:5px;margin:0 0 19px;padding:4px;border:1px solid var(--stroke);border-radius:13px;background:var(--field)}
+.frame-home-tabs button{border:0;border-radius:9px;background:transparent;padding:10px 9px;font-size:12px}.frame-home-tabs button.active{background:var(--panel);border:0;box-shadow:0 1px 7px #0002;color:var(--ink)}
+.frame-home-tabs button span{margin-left:4px;color:var(--muted);font-size:10px}
+.frame-home-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px}
+.frame-home-tile,.frame-home-preset{display:flex;flex-direction:column;position:relative;min-width:0;min-height:0;border-radius:14px;border:1px solid var(--stroke);overflow:hidden;background:var(--field)}
+.frame-home-tile>button.frame-home-project-open,.frame-home-preset{display:flex;flex-direction:column;align-items:stretch;gap:0;width:100%;padding:0;text-align:left;background:transparent;border:0;color:var(--ink);min-width:0}
+.frame-home-tile>.frame-home-project-delete{position:absolute;right:7px;top:7px;z-index:1;padding:6px;border-radius:9px;color:#fff;background:#15151bc9;border:1px solid #ffffff36;cursor:pointer}
+.frame-home-art{display:flex;align-items:center;justify-content:center;width:100%;height:150px;padding:12px;background:linear-gradient(145deg,var(--surface),var(--panel));overflow:hidden}
+.frame-home-art .frame-home-thumbnail{box-shadow:0 7px 19px #0004}
+.frame-home-tile-details{display:block;width:100%;padding:11px;min-width:0;text-align:left}
+.frame-home-tile-details strong{font-size:12px;line-height:1.35;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
+.frame-home-tile-details>span{font-size:10px;color:var(--muted);margin-top:5px;line-height:1.4;display:block}
+.frame-home-empty{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;text-align:center;gap:7px;padding:37px 16px;color:var(--muted);background:var(--field);border:1px dashed var(--stroke);border-radius:16px}
+.frame-home-empty strong{font-size:13px;color:var(--ink)}.frame-home-empty p{font-size:11px;line-height:1.5;margin:0}
+.frame-home-library{padding-bottom:20px}
+@media(max-width:360px){.frame-home-featured-card{flex-basis:111px}.frame-home-art{height:128px}.frame-home-quick-actions .frame-home-create,.frame-home-quick-actions .frame-home-import{padding:9px 11px}}
+@media(prefers-reduced-motion:reduce){.frame-home-featured-strip{scroll-behavior:auto}}
+
+/* 05D: accessible home settings and Android back feedback; no animated previews. */
+.frame-mobile .brand .mark[role="button"]{cursor:pointer;touch-action:manipulation}
+.frame-mobile .brand .mark[role="button"]:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.frame-home-hero .frame-home-settings-button{position:absolute;right:18px;top:calc(25px + env(safe-area-inset-top));display:grid;place-items:center;width:40px;height:40px;border:1px solid #ffffff38;border-radius:12px;background:#ffffff17;color:white;cursor:pointer;touch-action:manipulation}
+.frame-home-settings-backdrop{position:fixed;inset:0;z-index:5000;display:flex;align-items:center;justify-content:center;padding:20px;background:#0009}
+.frame-home-settings-dialog{width:min(380px,100%);padding:20px;border:1px solid var(--stroke);border-radius:18px;background:var(--panel);color:var(--ink);box-shadow:0 20px 60px #0008}
+.frame-home-settings-heading{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.frame-home-settings-heading strong{font-size:18px}
+.frame-home-settings-heading button{width:34px;height:34px;border:0;border-radius:9px;background:var(--field);color:var(--ink);font-size:24px;cursor:pointer}
+.frame-home-settings-dialog p{font-size:12px;color:var(--muted);margin:18px 0 9px}
+.frame-home-theme-options{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.frame-home-theme-options button{display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;border:1px solid var(--stroke);border-radius:11px;background:var(--field);color:var(--ink);cursor:pointer}
+.frame-home-theme-options button.selected{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:700}
+.frame-home-exit-hint{position:fixed;left:50%;bottom:calc(26px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:5500;max-width:calc(100vw - 32px);padding:12px 16px;border-radius:14px;background:#292a34;color:#fff;box-shadow:0 8px 24px #0008;font-size:12px;text-align:center;pointer-events:none;white-space:nowrap}
+
+/* 05E: theme-complete hero and lightweight native project workflow controls */
+.frame-mobile.theme-light .frame-home-hero{background:linear-gradient(140deg,#ece8ff 0%,#f4f1ff 48%,#f8f8fc 100%);color:#292641;border-bottom-color:#d9d4ed}
+.frame-mobile.theme-light .frame-home-hero::after{background:radial-gradient(circle,#9c89fa38 0%,#9583f30a 55%,transparent 72%)}
+.frame-mobile.theme-light .frame-home-hero .frame-home-brand h1{color:#292641}
+.frame-mobile.theme-light .frame-home-hero .frame-home-eyebrow{color:#6553a9}
+.frame-mobile.theme-light .frame-home-hero>p{color:#5b5773}
+.frame-mobile.theme-light .frame-home-hero .frame-home-import{background:#ffffffa8;border-color:#c9c4df;color:#292641}
+.frame-mobile.theme-light .frame-home-hero .frame-home-settings-button{background:#fff9;border-color:#c9c4df;color:#292641}
+.frame-home-storage-note{margin:0 0 18px;font-size:11px;line-height:1.6;color:var(--muted)}
+.frame-home-storage-note strong{color:var(--ink)}
+.frame-home-notice{font-size:12px;padding:10px 12px;border-radius:10px;background:var(--accent-soft);color:var(--ink)}
+.frame-home-project-label{display:block;margin:18px 0 7px;font-size:12px;color:var(--ink)}
+.frame-home-project-input{width:100%;box-sizing:border-box;background:var(--field);border:1px solid var(--stroke);border-radius:10px;color:var(--ink);padding:12px;font-size:16px}
+.frame-home-dialog-actions{display:flex;gap:10px;margin-top:18px}
+.frame-home-dialog-actions button{flex:1;min-height:43px;border-radius:10px;border:1px solid var(--stroke);background:var(--field);color:var(--ink)}
+.frame-home-dialog-actions button.primary{background:var(--accent);color:#fff;border-color:transparent}
+.frame-home-tile>.frame-home-project-backup{position:absolute;z-index:2;left:6px;top:6px;display:flex;align-items:center;gap:4px;padding:7px;border:1px solid #ffffff36;border-radius:8px;background:#15151bc9;color:#fff;font-size:10px;cursor:pointer}
+
+/* Patch 06: Android touch manipulation and multi-selection. Scoped to Mobile. */
+.frame-mobile .stage-scroller,.frame-mobile .stage,.frame-mobile .layer{touch-action:none}
+.frame-mobile .mobile-multiselect{display:block;width:calc(100% - 24px);margin:10px 12px;padding:10px;border:1px solid var(--stroke);border-radius:10px;background:var(--field);color:var(--ink)}
+.frame-mobile .mobile-multiselect.active{border-color:var(--accent);background:var(--accent-soft)}
+.frame-mobile .mobile-multi-done{position:absolute;right:12px;bottom:76px;z-index:2000;background:var(--accent);color:white;border:0;border-radius:18px;padding:10px 13px;font-size:12px;font-weight:700;box-shadow:0 5px 20px #0005;touch-action:manipulation}
+
+/* 06A: navigable margins, pinch/pan, and actionable multi-selection. */
+.frame-mobile .workspace{touch-action:none}
+.frame-mobile .stage-scroller{overscroll-behavior:contain;touch-action:none;padding:45vh max(40px,45vw);align-items:flex-start}
+.frame-mobile .stage-scroller .stage-wrap{margin:0;flex:none}
+.frame-mobile .mobile-multi-actions{position:absolute;left:12px;right:12px;bottom:78px;z-index:2000;display:flex;align-items:center;gap:8px;justify-content:center;background:var(--panel);color:var(--ink);border:1px solid var(--stroke);border-radius:14px;padding:9px;box-shadow:0 8px 25px #0006}
+.frame-mobile .mobile-multi-actions span{font-size:11px;white-space:nowrap;margin-right:auto}
+.frame-mobile .mobile-multi-actions button{min-height:38px;padding:0 12px;border-radius:9px;border:1px solid var(--stroke);background:var(--field);color:var(--ink);font-size:12px;cursor:pointer}
+.frame-mobile .mobile-multi-actions button.primary{display:flex;gap:5px;align-items:center;justify-content:center;background:var(--accent)!important;color:#fff!important;margin:0;border:0}
+.frame-mobile .mobile-multi-actions button:disabled{opacity:.45}
+
+/* 07A: compact export progress, never blocks editing surfaces or intercepts touch. */
+.frame-mobile .mobile-export-progress{position:fixed;z-index:3100;top:max(10px,env(safe-area-inset-top));left:12px;right:12px;max-width:460px;margin:0 auto;padding:12px 14px;background:var(--panel);color:var(--ink);border:1px solid var(--stroke);border-radius:12px;box-shadow:0 8px 28px #0007;pointer-events:none}
+.frame-mobile .mobile-export-progress-row{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:12px}
+.frame-mobile .mobile-export-progress-row strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.frame-mobile .mobile-export-progress-row span{font-size:11px;white-space:nowrap;color:var(--muted)}
+.frame-mobile .mobile-export-progress-track{height:5px;margin-top:9px;border-radius:9px;overflow:hidden;background:var(--field)}
+.frame-mobile .mobile-export-progress-fill{height:100%;background:var(--accent);transition:width .15s ease}
+
+/* 07B: Cancel stays tappable without blocking the canvas outside the banner. */
+.frame-mobile .mobile-export-progress{pointer-events:auto}
+.frame-mobile .mobile-export-cancel{margin-top:9px;border:1px solid var(--stroke);border-radius:8px;background:var(--field);color:var(--ink);padding:7px 12px;cursor:pointer;font-size:12px}
+
+/* 07D: compact workspace margins. Preserve room for intentional pan/zoom. */
+@media(max-width:850px){
+  .frame-mobile .stage-scroller{padding:clamp(24px,10vh,80px) clamp(18px,12vw,64px);align-items:flex-start;}
+  .frame-mobile .stage-scroller .stage-wrap{margin:0;flex:none;}
+}
+
+/* 07E: Keep the phone viewport tight. Do not waste horizontal space. */
+@media(max-width:850px){
+  .frame-mobile .workspace{padding-left:8px;padding-right:8px;}
+  .frame-mobile .stage-scroller{padding:20px 10px;}
+  /* Seams are editing guides, not artwork; never draw a divider over photos. */
+  .frame-mobile .stage .seam{display:none;}
+  .frame-mobile .mobile-export-progress-fill{transition:none;}
+  .frame-mobile .mobile-export-cancel:disabled{opacity:.6;cursor:default;}
+}
+
+/* 07F: Keep narrow side gutters, but enough VERTICAL scrollable space for centering.
+   This space is scroll padding, not clipped content. */
+@media(max-width:850px){
+  .frame-mobile .workspace{padding-left:8px;padding-right:8px;overflow:hidden;}
+  .frame-mobile .stage-scroller{
+    display:block;overflow:auto;overscroll-behavior:contain;
+    padding:clamp(110px,28vh,240px) 10px;
+    align-items:initial;
+  }
+  .frame-mobile .stage-scroller .stage-wrap{margin:0 auto;}
+  .frame-mobile .mobile-export-cancel{transition:none;}
+}
+
+/* 07G: Phone-sized preview surface, but keep the tiny cached JPEG source.
+   Upscaling changes display size only and does not repeat the render. */
+@media (max-width:850px){
+  .frame-mobile .instagram-preview-overlay{padding:8px;}
+  .frame-mobile .instagram-preview-dialog{width:100%;max-width:none;max-height:calc(100dvh - 16px);padding:12px;}
+  .frame-mobile .instagram-preview-stage{gap:4px;width:100%;min-height:52dvh;}
+  .frame-mobile .instagram-preview-image{width:100%;height:auto;max-width:none;max-height:76dvh;min-width:0;object-fit:contain;image-rendering:auto;}
+  .frame-mobile .instagram-preview-stage .preview-nav{width:29px;height:44px;padding:0;}
+  .frame-mobile .mobile-export-cancel{touch-action:manipulation;min-height:42px;}
+}
+
+/* 07H: prevent Android text-selection handles/highlights during long-press.
+   Inspector inputs remain selectable for normal text editing. */
+@media (max-width:850px){
+  .frame-mobile .workspace,
+  .frame-mobile .stage,
+  .frame-mobile .stage *,
+  .frame-mobile .layer-context-menu,
+  .frame-mobile .layer-context-menu *{
+    -webkit-user-select:none!important;user-select:none!important;
+    -webkit-touch-callout:none!important;
+  }
+  .frame-mobile .inspector input,
+  .frame-mobile .inspector textarea,
+  .frame-mobile .inspector [contenteditable=true]{
+    -webkit-user-select:text!important;user-select:text!important;
+  }
+}
+
+/* 07I: subtle editor-only page boundary, visible over artwork without
+   clipping images or appearing in exported slides. */
+@media (max-width:850px){
+  .frame-mobile .mobile-slide-boundary{
+    position:absolute;top:0;bottom:0;width:2px;
+    transform:translateX(-1px);z-index:1790;pointer-events:none;
+    background:rgba(255,255,255,.40);
+    box-shadow:0 0 1px rgba(0,0,0,.6);
+  }
+  .frame-mobile.theme-light .mobile-slide-boundary{
+    background:rgba(20,25,38,.38);
+    box-shadow:0 0 1px rgba(255,255,255,.6);
+  }
+}
+
+/* Patch 07K: Keep group actions clear of Android's bottom gesture-navigation zone. */
+.frame-mobile .mobile-multi-actions{
+  position:fixed;
+  left:12px;
+  right:12px;
+  bottom:calc(118px + env(safe-area-inset-bottom, 0px));
+  max-width:520px;
+  margin-inline:auto;
+  z-index:2000;
+}
+.frame-mobile .mobile-ungroup-action{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  width:100%;
+  min-height:42px;
+  margin:8px 0 12px;
+  padding:8px 12px;
+  border:1px solid var(--stroke);
+  border-radius:10px;
+  color:var(--ink);
+  background:var(--field);
+  font:inherit;
+  cursor:pointer;
+  touch-action:manipulation;
+}
+
+
+/* Patch 08C: Review the exact encoded PNGs before saving or sharing. */
+.frame-mobile .frame-export-review-overlay{position:fixed;inset:0;z-index:3800;display:grid;place-items:center;background:rgba(0,0,0,.86);padding:calc(10px + env(safe-area-inset-top,0px)) 10px calc(12px + env(safe-area-inset-bottom,0px));}
+.frame-mobile .frame-export-review{width:min(100%,600px);max-height:100%;overflow:auto;background:var(--panel);color:var(--ink);border:1px solid var(--stroke);border-radius:17px;padding:12px;display:flex;flex-direction:column;gap:11px;}
+.frame-mobile .frame-export-review-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+.frame-mobile .frame-export-review-heading strong{font-size:16px;display:block;}
+.frame-mobile .frame-export-review-heading small{display:block;font-size:11px;color:var(--muted);margin-top:4px;}
+.frame-mobile .frame-export-review-heading button{background:var(--field);color:var(--ink);border:1px solid var(--stroke);border-radius:9px;min-width:38px;min-height:38px;font-size:22px;}
+.frame-mobile .frame-export-review-stage{min-height:0;display:flex;align-items:center;justify-content:center;gap:5px;}
+/* 08G: Only style direct legacy preview images, NOT photos inside canvas layers.
+   Nested layer photos must retain their exact width, height and crop geometry. */
+.frame-mobile .frame-export-review-stage > img{max-width:calc(100% - 78px);width:auto;height:auto;max-height:65dvh;object-fit:contain;background:#fff;}
+.frame-mobile .frame-export-review-stage button{flex:none;width:34px;min-height:48px;background:var(--field);color:var(--ink);border:1px solid var(--stroke);border-radius:9px;font-size:24px;}
+.frame-mobile .frame-export-review-stage button:disabled{opacity:.25;}
+.frame-mobile .frame-export-review-counter{text-align:center;color:var(--muted);font-size:12px;}
+.frame-mobile .frame-export-review-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.frame-mobile .frame-export-review-actions button{min-height:46px;display:flex;align-items:center;justify-content:center;gap:6px;background:var(--accent);color:#fff;border:0;border-radius:10px;font-weight:650;padding:8px;}
+.frame-mobile .frame-export-review-actions button+button{background:var(--field);color:var(--ink);border:1px solid var(--stroke);}
+.frame-mobile .frame-export-review-actions button:disabled{opacity:.6;}
+.frame-mobile .frame-export-review-status{text-align:center;font-size:12px;color:var(--muted);margin:0;}
+
+/* 08D: live editing without an opaque overlay on the canvas. */
+@media (max-width:850px) {
+ .frame-mobile .mobile-inspector-backdrop{display:none!important}
+ .frame-mobile.mobile-inspector-open .inspector{height:min(32dvh,290px);max-height:32dvh;bottom:calc(70px + env(safe-area-inset-bottom,0px));box-shadow:0 -4px 16px #0005}
+ .frame-mobile.mobile-inspector-open .stage-scroller{max-height:calc(52dvh - env(safe-area-inset-top,0px));min-height:170px}
+ .frame-mobile .frame-live-review-page{width:100%;max-width:380px;overflow:hidden;position:relative;flex:none;background:#fff}
+ .frame-mobile .frame-live-review-content{position:absolute;left:0;top:0;transform-origin:top left;pointer-events:none}
+ .frame-mobile .frame-live-review-page .layer{outline:none!important;border-color:transparent!important}
+ .frame-mobile .frame-export-review-stage{min-height:0}
+ .frame-mobile .frame-export-review-stage .frame-live-review-page{max-height:60dvh}
+}
+
+/* 08F: Accurate export-review geometry. The viewport controls BOTH the
+   slide frame and its DOM artwork; do not independently scale them. */
+@media (max-width:850px) {
+  .frame-mobile .frame-export-review-stage {
+    display:grid;
+    grid-template-columns:34px minmax(0,1fr) 34px;
+    width:100%;
+    gap:5px;
+    justify-items:center;
+    align-items:center;
+  }
+  .frame-mobile .frame-export-review-viewport {
+    display:flex;
+    width:100%;
+    min-width:0;
+    justify-content:center;
+    align-items:center;
+    overflow:hidden;
+  }
+  .frame-mobile .frame-live-review-page {
+    flex:none;
+    max-width:none !important;
+    max-height:none !important;
+    position:relative;
+    overflow:hidden;
+    background:transparent;
+  }
+  .frame-mobile .frame-live-review-content {
+    position:absolute;
+    left:0;
+    top:0;
+    transform-origin:top left;
+    pointer-events:none;
+  }
+  /* Keep saving/rendering status ABOVE the review artwork and buttons. */
+  .frame-mobile .frame-review-progress {
+    padding:10px 12px;
+    border:1px solid var(--stroke);
+    border-radius:11px;
+    background:var(--field);
+    color:var(--ink);
+    width:100%;
+    flex:none;
+  }
+  .frame-mobile .frame-review-progress .mobile-export-cancel {
+    min-height:38px;
+    width:100%;
+    touch-action:manipulation;
+  }
+}
+
+/* 08H: Match mobile preview, editor and PNG text box alignment. */
+.frame-mobile .layer .frame-mobile-text {
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  box-sizing:border-box;
+}
+.frame-mobile .layer .frame-mobile-text > span {
+  min-width:0;
+  box-sizing:border-box;
+}
+.frame-mobile .mobile-text-fit-hint {
+  font-size:11px;
+  line-height:1.4;
+  color:var(--muted);
+}
+
+/* Patch 08I (rebased): Above-layer indicator for image-to-shape drops.
+   Editing affordance only: not included in review or PNG export. */
+.frame-mobile .stage .mobile-shape-drop-overlay {
+  position:absolute;
+  box-sizing:border-box;
+  z-index:100000;
+  pointer-events:none;
+  border:3px solid var(--accent,#728bff);
+  background:color-mix(in srgb,var(--accent,#728bff) 20%,transparent);
+  box-shadow:0 0 0 3px #fffa,0 0 18px var(--accent,#728bff);
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+}
+.frame-mobile .stage .mobile-shape-drop-overlay span {
+  position:absolute;
+  top:8px;
+  padding:5px 7px;
+  border-radius:7px;
+  background:#16161de8;
+  color:#fff;
+  font-size:11px;
+  font-weight:700;
+  white-space:nowrap;
+  text-shadow:none;
+}
+
+
+/* 08J: Scroll long-press actions inside the phone screen. Never cover the
+   final actions below the bottom toolbar or rely on a guessed menu height. */
+@media(max-width:850px){
+  .frame-mobile .layer-context-menu{
+    position:fixed;
+    width:min(224px,calc(100vw - 16px));
+    min-width:0;
+    max-height:calc(100dvh - 140px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));
+    overflow-y:auto;
+    overscroll-behavior:contain;
+    touch-action:pan-y;
+    -webkit-overflow-scrolling:touch;
+    box-sizing:border-box;
+    z-index:3000;
+  }
+  .frame-mobile .layer-context-menu button{min-height:40px;flex-shrink:0;}
+  .frame-mobile .mobile-shape-drop-overlay.is-pending{
+    border-style:dashed;
+    background:color-mix(in srgb,var(--accent,#728bff) 9%,transparent);
+    box-shadow:0 0 0 1px #fffa;
+  }
+  .frame-mobile .mobile-shape-drop-overlay.is-armed{
+    border-style:solid;
+    background:color-mix(in srgb,var(--accent,#728bff) 23%,transparent);
+  }
+  .frame-mobile .mobile-mask-actions{
+    margin:3px 0 14px;
+    padding:10px;
+    border:1px solid var(--accent);
+    border-radius:10px;
+    background:var(--accent-soft);
+  }
+  .frame-mobile .mobile-mask-actions>span{display:block;margin-bottom:8px;}
+  .frame-mobile .mobile-mask-actions .detach-shape-button{
+    display:block;width:100%;min-height:42px;
+    border:1px solid var(--accent);border-radius:9px;
+    color:var(--ink);background:var(--panel);
+    font-size:12px;font-weight:700;touch-action:manipulation;
+  }
+}
+
+
+/* 08K: In-shape image framing. The mask remains fixed; only the photo moves. */
+@media(max-width:850px){
+  .frame-mobile .stage .mobile-mask-crop-target{
+    position:absolute;z-index:1900;box-sizing:border-box;
+    outline:2px dashed var(--accent,#728bff);outline-offset:2px;
+    background:color-mix(in srgb,var(--accent,#728bff) 7%,transparent);
+    cursor:move;touch-action:none;display:flex;justify-content:center;align-items:flex-start;
+  }
+  .frame-mobile .mobile-mask-crop-target span{
+    margin-top:8px;max-width:90%;padding:4px 7px;border-radius:6px;
+    background:#17171dcf;color:#fff;font-size:10px;font-weight:700;
+    text-align:center;pointer-events:none;
+  }
+  .frame-mobile .mobile-mask-crop-controls{
+    position:absolute;z-index:2700;left:10px;right:10px;bottom:10px;
+    max-width:500px;margin:0 auto;padding:11px 12px;border-radius:13px;
+    border:1px solid var(--accent);background:var(--panel);color:var(--ink);
+    box-shadow:0 7px 24px #0008;touch-action:manipulation;
+  }
+  .frame-mobile .mobile-mask-crop-title{display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .frame-mobile .mobile-mask-crop-title strong{font-size:12px}
+  .frame-mobile .mobile-mask-crop-title span{font-size:10px;color:var(--muted);text-align:right}
+  .frame-mobile .mobile-mask-crop-zoom{display:flex;align-items:center;gap:9px;margin:9px 0}
+  .frame-mobile .mobile-mask-crop-zoom label{font-size:11px}
+  .frame-mobile .mobile-mask-crop-zoom input{flex:1;min-width:0;accent-color:var(--accent);touch-action:pan-x}
+  .frame-mobile .mobile-mask-crop-zoom span{font-size:11px;min-width:40px;text-align:right}
+  .frame-mobile .mobile-mask-crop-buttons{display:flex;gap:8px}
+  .frame-mobile .mobile-mask-crop-buttons button{flex:1;min-height:36px;padding:6px 9px;border-radius:9px;border:1px solid var(--stroke);background:var(--field);color:var(--ink);font-size:12px;cursor:pointer}
+  .frame-mobile .mobile-mask-crop-buttons button.primary{background:var(--accent)!important;color:white!important;margin:0}
+  .frame-mobile .mobile-mask-actions .adjust-shape-image-button{display:block;width:100%;min-height:42px;margin:0 0 8px;border:1px solid var(--accent);border-radius:9px;color:#fff;background:var(--accent);font-size:12px;font-weight:700;touch-action:manipulation}
+}
+
+/* 08M: An image masked by a shape is selected at the SHAPE outline, not
+   the hidden full-image rectangle. This does not create resize handles. */
+@media(max-width:850px){
+  .frame-mobile .stage .mobile-mask-selection-outline {
+    position:absolute;z-index:1850;pointer-events:none;overflow:visible;
+    fill:none;stroke:var(--accent,#728bff);stroke-linejoin:round;
+    stroke-linecap:round;filter:drop-shadow(0 0 2px rgba(0,0,0,.75));
+  }
+}
+
+
+/* 08N: The crop toolbar belongs to the visible phone viewport, not the
+   scrollable Edit inspector or the bottom of the full document. */
+@media(max-width:850px){
+  .frame-mobile .mobile-mask-crop-controls{
+    position:fixed;
+    z-index:2800;
+    left:calc(10px + env(safe-area-inset-left,0px));
+    right:calc(10px + env(safe-area-inset-right,0px));
+    bottom:calc(78px + env(safe-area-inset-bottom,0px));
+    max-width:500px;
+    margin:0 auto;
+  }
+}
+
+/* 08O: Masked-image selection uses a real, resizable SHAPE frame. The photo
+   rectangle stays hidden, while all eight visible handles resize the mask. */
+@media(max-width:850px){
+  .frame-mobile .stage .mobile-mask-selection-frame{
+    position:absolute;z-index:1850;box-sizing:border-box;
+    outline:2px dashed var(--accent,#728bff);outline-offset:1px;
+    pointer-events:auto;touch-action:none;overflow:visible;
+  }
+  .frame-mobile .stage .mobile-mask-selection-frame .mobile-mask-resize-handle{
+    display:block;position:absolute;box-sizing:border-box;z-index:2;
+    width:14px;height:14px;min-width:14px;min-height:14px;
+    padding:0;border:2px solid var(--accent,#728bff);border-radius:3px;
+    background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.45);
+    transform:translate(-50%,-50%);pointer-events:auto;touch-action:none;
+  }
+  /* Keep the crop target visible but don't print instructions over the photo. */
+  .frame-mobile .mobile-mask-crop-target span{display:none;}
+}
